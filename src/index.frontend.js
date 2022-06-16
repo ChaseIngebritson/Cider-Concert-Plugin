@@ -1,19 +1,23 @@
 
-class CiderPluginTemplateFrontend {
-  name = 'Cider Plugin Template'
+class CiderConcertsFrontend {
+  name = 'Concerts'
 
   constructor() {
-    CiderFrontAPI.StyleSheets.Add('./plugins/cider-plugin-template/ciderplugintemplate.less')
+    CiderFrontAPI.StyleSheets.Add('./plugins/gh_498562102/concerts.less')
 
     this.menuEntryId = window.uuidv4()
 
     const menuEntry = new CiderFrontAPI.Objects.MenuEntry()
     menuEntry.Id = this.menuEntryId
-    menuEntry.name = "Cider Plugin Template"
+    menuEntry.name = "Concerts"
     menuEntry.onClick = ()=>{
-      app.appRoute("plugin/cider-plugin-template-ui")
+      app.appRoute("plugin/concerts-ui")
     }
     CiderFrontAPI.AddMenuEntry(menuEntry)
+  }
+
+  async getConcerts (artistName) {
+    
   }
 
   async getArtist (id) {
