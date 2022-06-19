@@ -1,13 +1,28 @@
 .concerts-control-container {
-  .control-button {
+  .icon {
     background-size: 16px;
     background-repeat: no-repeat;
     background-position: center;
-    
-    &.icon {
-      &-rotate-ccw {
-        background-image: url("./assets/svg/rotate-ccw.svg");
-      }
+
+    &-rotate-ccw {
+      background-image: url("./assets/svg/rotate-ccw.svg");
     }
+
+    &-map-pin {
+      background-image: url("./assets/svg/map-pin.svg");
+    }
+  }
+
+  .search-input-container .icon {
+    content: '';
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    pointer-events: none;
+    opacity: 0.55;
+    background-position: 10px;
   }
 }
