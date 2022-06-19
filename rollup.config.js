@@ -13,7 +13,7 @@ export default {
   input: [
     'src/index.js', 
     'src/index.frontend.js', 
-    'src/components/ciderPluginTemplate-vue.js'
+    'src/components/concerts-vue.js'
   ],
   output: { 
     dir: OUTPUT_DIR,

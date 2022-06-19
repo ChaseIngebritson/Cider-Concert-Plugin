@@ -1,13 +1,13 @@
 import path from 'path'
 import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron'    
 
-export default class CiderPluginTemplate {
+export default class ConcertsPlugin {
     /**
      * Base Plugin Details (Eventually implemented into a GUI in settings)
      */
-    name = 'Cider Plugin Template';
-    description = 'A template for building Cider plugins.';
-    version = '1.0.0';
+    name = 'Concerts';
+    description = 'A Cider plugin for easily finding upcoming concerts for your favorite artists.';
+    version = '0.1.0';
     author = 'Chase Ingebritson';
          
     /**
@@ -48,7 +48,7 @@ export default class CiderPluginTemplate {
         this.debug('Renderer Ready')
         
         this.env.utils.loadJSFrontend(path.join(this.env.dir, "index.frontend.js"))
-        this.env.utils.loadJSFrontend(path.join(this.env.dir, "ciderPluginTemplate-vue.js"))
+        this.env.utils.loadJSFrontend(path.join(this.env.dir, "concerts-vue.js"))
     }
 
     /**
