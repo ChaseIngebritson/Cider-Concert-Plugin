@@ -1,3 +1,8 @@
+.concerts-page {
+  height: calc(100% - var(--navigationBarHeight));
+  padding: 0px;
+}
+
 .concerts-control-container {
   .icon {
     background-size: 16px;
@@ -25,4 +30,25 @@
     opacity: 0.55;
     background-position: 10px;
   }
+}
+
+.concerts-body {
+  width: 100%;
+  height: calc(100% - 64px); // Plz forgive me
+  display: flex;
+}
+
+.concerts-list {
+  width: 400px;
+  height: 100%;
+  background: rgba(200, 200, 200, 0.1);
+  overflow-y: overlay;
+  border-right: 1px solid var(--color2);
+  flex: none;
+  overflow-x: hidden;
+}
+
+.concert-info {
+  width: 100%;
+  height: 100%;
 }

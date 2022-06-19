@@ -1,6 +1,6 @@
 Vue.component('plugin.concerts', {
   template: `
-    <div class="content-inner library-page">
+    <div class="content-inner concerts-page library-page">
       <div class="library-header concerts-control-container">
         <div class="row">
           <div class="col" style="padding:0;">
@@ -40,10 +40,11 @@ Vue.component('plugin.concerts', {
               <div class="icon icon-map-pin"></div> 
               <input
                 type="search"
+                @input="searchDebounce"
                 @keyup.enter="searchDebounce"
                 spellcheck="false"
-                placeholder="Zip Code"
-                v-model="zipCode" 
+                placeholder="Postal Code"
+                v-model="postalCode" 
                 class="search-input"
               />
             </div>
@@ -66,15 +67,16 @@ Vue.component('plugin.concerts', {
           </div>
         </div>
       </div>
-      <div class="concert-list">
-        <div class="concert-list-item" v-for="concert in concerts">
-          <div class="row">
-            <div class="col-auto">
-              <plugin.concerts.concert-entry 
-                :concert-data="concert" 
-              />
-            </div>
-          </div>
+      <div class="concerts-body">
+        <div class="concerts-list">
+          <plugin.concerts.concert-entry
+            v-for="(concert, index) in concerts"
+            :key="index"
+            :concert-data="concert" 
+          />
+        </div>
+        <div class="concert-info">
+
         </div>
       </div>
     </div>
@@ -86,11 +88,11 @@ Vue.component('plugin.concerts', {
     sortOrderOptions: ['ascending', 'descending'],
     sortOrder: 'ascending',
     loading: false,
-    zipCode: null
+    postalCode: null
   }),
   created () {
     this.searchDebounce = CiderConcertsPlugin.debounce(this.search);
-    this.zipCode = CiderConcertsPlugin.getLocalStorage('zipCode')
+    this.postalCode = CiderConcertsPlugin.getLocalStorage('postalCode')
   },
   async mounted () {
     const nowPlayingArtist = await CiderConcertsPlugin.getNowPlayingArtist()
@@ -108,9 +110,10 @@ Vue.component('plugin.concerts', {
 
       const response = await CiderConcertsPlugin.getConcerts({
         artist: this.artist?.attributes?.name,
-        zipCode: this.zipCode,
+        postalCode: this.postalCode,
       })
-      if (response.concerts) this.concertsStore = response.concerts
+
+      this.concertsStore = response.concerts || []
 
       this.loading = false
     },
@@ -120,9 +123,19 @@ Vue.component('plugin.concerts', {
   },
   computed: {
     concerts () {
-      const concerts = this.concertsStore
+      let concerts = this.concertsStore
 
       if (!concerts?.length) return []
+
+      concerts = concerts.sort((a, b) => {
+        const aDateObj = a.dates.start
+        const bDateObj = b.dates.start
+
+        const aDate = new Date(`${aDateObj.localDate}T${aDateObj.localTime}Z`)
+        const bDate = new Date(`${bDateObj.localDate}T${bDateObj.localTime}Z`)
+
+        return aDate - bDate
+      })
       
       if (this.sortOrder === 'descending') concerts = concerts.reverse()
 
@@ -135,8 +148,8 @@ Vue.component('plugin.concerts', {
 
       this.getConcerts()
     },
-    zipCode () {
-      CiderConcertsPlugin.updateLocalStorage('zipCode', this.zipCode)
+    postalCode () {
+      CiderConcertsPlugin.updateLocalStorage('postalCode', this.postalCode)
     }
   }
 })
@@ -144,13 +157,43 @@ Vue.component('plugin.concerts', {
 Vue.component('plugin.concerts.concert-entry', {
   template: `
     <div class="concert-entry">
-      
+      <div class="cd-mediaitem-list-item list-flat" :class="{'mediaitem-selected': false}">
+        <div class="artwork">
+          <mediaitem-artwork
+            :url="concertData.images[0].url"
+            size="50"
+            type="concert"
+          />
+        </div>
+        <div class="info-rect">
+          <div class="title text-overflow-elipsis">
+            {{ venue.name }} | {{ venue.city.name }}
+          </div>
+          <div class="sub-title text-overflow-elipsis">
+            {{ date }}
+          </div>
+        </div>
+    </div>
     </div>
   `,
   props: {
     concertData: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    date () {
+      const datesObj = this.concertData.dates.start
+      const date = new Date(`${datesObj.localDate}T${datesObj.localTime}Z`)
+
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric'
+      }).format(date)
+    },
+    venue () {
+      return this.concertData._embedded.venues[0]
     }
   }
 })
