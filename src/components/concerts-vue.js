@@ -72,12 +72,15 @@ Vue.component('plugin.concerts', {
           <plugin.concerts.concert-entry
             v-for="(concert, index) in concerts"
             :key="index"
-            :concert-data="concert" 
+            :concert-data="concert"
+            :active="activeConcert && activeConcert.id === concert.id"
+            @set-active-concert="setActiveConcert(concert)"
           />
         </div>
-        <div class="concert-info">
-
-        </div>
+        <plugin.concerts.active-concert
+          v-if="activeConcert"
+          :concert-data="activeConcert" 
+        />
       </div>
     </div>
   `,
@@ -88,11 +91,13 @@ Vue.component('plugin.concerts', {
     sortOrderOptions: ['ascending', 'descending'],
     sortOrder: 'ascending',
     loading: false,
-    postalCode: null
+    postalCode: null,
+    activeConcert: null,
   }),
   created () {
     this.searchDebounce = CiderConcertsPlugin.debounce(this.search);
     this.postalCode = CiderConcertsPlugin.getLocalStorage('postalCode')
+    this.artist = CiderConcertsPlugin.getLocalStorage('artist')
   },
   async mounted () {
     const nowPlayingArtist = await CiderConcertsPlugin.getNowPlayingArtist()
@@ -119,6 +124,9 @@ Vue.component('plugin.concerts', {
     },
     getLz (term) {
       return window.app.getLz(term)
+    },
+    setActiveConcert (concert) {
+      this.activeConcert = concert
     }
   },
   computed: {
@@ -146,6 +154,7 @@ Vue.component('plugin.concerts', {
     artist () {
       if (!this.artist) return
 
+      CiderConcertsPlugin.updateLocalStorage('artist', this.artist)
       this.getConcerts()
     },
     postalCode () {
@@ -157,7 +166,11 @@ Vue.component('plugin.concerts', {
 Vue.component('plugin.concerts.concert-entry', {
   template: `
     <div class="concert-entry">
-      <div class="cd-mediaitem-list-item list-flat" :class="{'mediaitem-selected': false}">
+      <div
+        @click="setActiveConcert"
+        class="cd-mediaitem-list-item list-flat" 
+        :class="{'mediaitem-selected': active}"
+      >
         <div class="artwork">
           <mediaitem-artwork
             :url="concertData.images[0].url"
@@ -170,7 +183,7 @@ Vue.component('plugin.concerts.concert-entry', {
             {{ venue.name }} | {{ venue.city.name }}
           </div>
           <div class="sub-title text-overflow-elipsis">
-            {{ date }}
+            {{ date }} - {{ concertData.name }}
           </div>
         </div>
     </div>
@@ -180,6 +193,10 @@ Vue.component('plugin.concerts.concert-entry', {
     concertData: {
       type: Object,
       required: true
+    },
+    active: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -194,6 +211,73 @@ Vue.component('plugin.concerts.concert-entry', {
     },
     venue () {
       return this.concertData._embedded.venues[0]
+    }
+  },
+  methods: {
+    setActiveConcert () {
+      this.$emit('set-active-concert', this.concertData)
+    }
+  }
+})
+
+Vue.component('plugin.concerts.active-concert', {
+  template: `
+    <div class="concert-info">
+      <div class="concert-header">
+        <artwork-material 
+          :url="concertData.images[0].url"
+          size="190"
+          images="1"
+        />
+        <div class="row">
+          <div class="col-sm">
+            <div class="artist-image">
+              <mediaitem-artwork 
+                :url="concertData.images[0].url"
+                size="190"
+                type="artists"
+                shadow="large"
+              />
+            </div>
+          </div>
+          <div class="concert-title col flex-center">
+            <h1>{{ concertData.name }}</h1>
+          </div>
+        </div>
+      </div>
+      <div class="well">
+        <h2>Lineup</h2>
+        <div
+          v-for="artist in concertData._embedded.attractions"
+          :key="artist.id"
+          class="cd-mediaitem-list-item list-flat lineup-artist"
+        >
+          <div class="artwork">
+            <mediaitem-artwork
+              :url="artist.images[0].url"
+              size="50"
+              type="artists"
+            />
+          </div>
+          <div class="info-rect">
+            <div class="title text-overflow-elipsis">
+              {{ artist.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="concertData.seatmap" class="seatmap-container">
+        <img 
+          :src="concertData.seatmap.staticUrl"
+          class="seatmap"
+        />
+      </div>
+    </div>
+  `,
+  props: {
+    concertData: {
+      type: Object,
+      required: true
     }
   }
 })
