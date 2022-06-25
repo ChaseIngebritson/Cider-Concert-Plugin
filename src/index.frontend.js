@@ -17,12 +17,10 @@ class CiderConcertsFrontend {
     CiderFrontAPI.AddMenuEntry(menuEntry)
   }
 
-  async getConcerts ({ artist, postalCode }) {
+  async getConcerts ({ artist, postalCode, sort, page }) {
     if (!artist) return []
 
-    const params = new URLSearchParams({
-      artist: artist, 
-    })
+    const params = new URLSearchParams({ artist, sort, page })
 
     if (postalCode && postalCode !== '' && postalCode.match(/^\d{5}(?:[-\s]\d{4})?$/)) {
       params.append('postalCode', postalCode)

@@ -76,6 +76,8 @@ Vue.component('plugin.concerts', {
             :active="activeConcert && activeConcert.id === concert.id"
             @set-active-concert="setActiveConcert(concert)"
           />
+          <button v-if="showPrevPage" @click="onPageClick('prev')">Previous</button>
+          <button v-if="showNextPage" @click="onPageClick('next')">Next</button>
         </div>
         <plugin.concerts.active-concert
           v-if="activeConcert"
@@ -93,6 +95,8 @@ Vue.component('plugin.concerts', {
     loading: false,
     postalCode: null,
     activeConcert: null,
+    page: 0,
+    totalPages: 0
   }),
   created () {
     this.searchDebounce = CiderConcertsPlugin.debounce(this.search);
@@ -116,17 +120,29 @@ Vue.component('plugin.concerts', {
       const response = await CiderConcertsPlugin.getConcerts({
         artist: this.artist?.attributes?.name,
         postalCode: this.postalCode,
+        sort: this.sortOrder,
+        page: this.page
       })
-
-      this.concertsStore = response.concerts || []
-
+      
       this.loading = false
+
+      if (response.error) return console.error(response.message)
+
+      this.concertsStore = response.events || []
+      this.page = response.page || 0
+      this.totalPages = response.totalPages || 0
     },
     getLz (term) {
       return window.app.getLz(term)
     },
     setActiveConcert (concert) {
       this.activeConcert = concert
+    },
+    onPageClick (direction) {
+      if (direction === 'prev') this.page--
+      else this.page++
+
+      this.getConcerts()
     }
   },
   computed: {
@@ -148,6 +164,12 @@ Vue.component('plugin.concerts', {
       if (this.sortOrder === 'descending') concerts = concerts.reverse()
 
       return concerts
+    },
+    showNextPage () {
+      return !this.loading && this.page < this.totalPages - 1
+    },
+    showPrevPage () {
+      return !this.loading && this.page !== 0 
     }
   },
   watch: {
