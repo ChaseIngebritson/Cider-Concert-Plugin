@@ -18,9 +18,10 @@ class CiderConcertsFrontend {
   }
 
   async getConcerts ({ artist, postalCode, sort, page }) {
-    if (!artist) return []
-
-    const params = new URLSearchParams({ artist, sort, page })
+    const params = new URLSearchParams({ 
+      ...(artist && { artist }),
+      sort, page 
+    })
 
     if (postalCode && postalCode !== '' && postalCode.match(/^\d{5}(?:[-\s]\d{4})?$/)) {
       params.append('postalCode', postalCode)
@@ -68,6 +69,11 @@ class CiderConcertsFrontend {
 
     if (data) this.debug(`Loaded ${key} from localStorage`, JSON.parse(data))
     return JSON.parse(data)
+  }
+
+  removeLocalStorage (key) {
+    localStorage.removeItem(key);
+    this.debug(`Removed ${key} from localStorage`)
   }
 
   debounce(func, timeout = 300){

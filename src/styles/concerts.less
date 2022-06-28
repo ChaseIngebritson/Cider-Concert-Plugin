@@ -1,9 +1,7 @@
 .concerts-page {
   height: calc(100% - var(--navigationBarHeight));
   padding: 0px;
-}
 
-.concerts-control-container {
   .icon {
     background-size: 16px;
     background-repeat: no-repeat;
@@ -16,8 +14,14 @@
     &-map-pin {
       background-image: url("./assets/svg/map-pin.svg");
     }
-  }
 
+    &-external-link {
+      background-image: url("./assets/svg/external-link.svg");
+    }
+  }
+}
+
+.concerts-control-container {
   .search-input-container .icon {
     content: '';
     width: 100%;
@@ -52,6 +56,10 @@
   width: 100%;
   height: 100%;
 
+  .buy-tickets {
+    margin-left: 2em;
+  }
+
   .concert-header {
     display: flex;
     align-items: center;
@@ -84,6 +92,10 @@
       flex-grow: 100;
       z-index: 1;
     }
+  }
+
+  .well-header {
+    margin-top: 0;
   }
 
   .seatmap-container {

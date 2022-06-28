@@ -11,8 +11,7 @@ Vue.component('plugin.concerts', {
                 style="width:100%;"
                 spellcheck="false"
                 :placeholder="getLz('term.search') + '...'"
-                @input="searchDebounce"
-                @keyup.enter="searchDebounce"
+                @keyup.enter="searchArtistDebounce"
                 v-model="searchInput"
                 class="search-input"
               />
@@ -40,8 +39,8 @@ Vue.component('plugin.concerts', {
               <div class="icon icon-map-pin"></div> 
               <input
                 type="search"
-                @input="searchDebounce"
-                @keyup.enter="searchDebounce"
+                @input="searchConcertDebounce"
+                @keyup.enter="searchConcertDebounce"
                 spellcheck="false"
                 placeholder="Postal Code"
                 v-model="postalCode" 
@@ -52,7 +51,7 @@ Vue.component('plugin.concerts', {
           <div class="col-auto flex-center">
             <button 
               v-if="!loading" 
-              @click="getConcerts" 
+              @click="searchConcert" 
               class="reload-btn icon icon-rotate-ccw"
               title="Reload"
             ></button>
@@ -99,22 +98,33 @@ Vue.component('plugin.concerts', {
     totalPages: 0
   }),
   created () {
-    this.searchDebounce = CiderConcertsPlugin.debounce(this.search);
+    this.searchArtistDebounce = CiderConcertsPlugin.debounce(this.searchArtist);
+    this.searchConcertDebounce = CiderConcertsPlugin.debounce(this.searchConcert);
     this.postalCode = CiderConcertsPlugin.getLocalStorage('postalCode')
     this.artist = CiderConcertsPlugin.getLocalStorage('artist')
+
+    if (this.artist) this.searchInput = this.artist.attributes.name
   },
   async mounted () {
     const nowPlayingArtist = await CiderConcertsPlugin.getNowPlayingArtist()
     if (nowPlayingArtist) this.artist = nowPlayingArtist
+
+    if (!this.artist && this.postalCode) {
+      this.searchConcert()
+    }
   },
   methods: {
-    async search () {
+    async searchArtist () {
+      if (this.searchInput === '') {
+        return this.searchConcert()
+      }
+
       const artists = await CiderConcertsPlugin.searchArtists(this.searchInput)
-      if (!artists?.length) return
+      if (!artists?.length) return this.artist = null
       
       this.artist = artists[0]
     },
-    async getConcerts () {
+    async searchConcert (resetPages = true) {
       this.loading = true
 
       const response = await CiderConcertsPlugin.getConcerts({
@@ -131,6 +141,8 @@ Vue.component('plugin.concerts', {
       this.concertsStore = response.events || []
       this.page = response.page || 0
       this.totalPages = response.totalPages || 0
+      
+      if (resetPages) this.page = 0
     },
     getLz (term) {
       return window.app.getLz(term)
@@ -141,8 +153,6 @@ Vue.component('plugin.concerts', {
     onPageClick (direction) {
       if (direction === 'prev') this.page--
       else this.page++
-
-      this.getConcerts()
     }
   },
   computed: {
@@ -174,13 +184,24 @@ Vue.component('plugin.concerts', {
   },
   watch: {
     artist () {
-      if (!this.artist) return
+      if (!this.artist) return CiderConcertsPlugin.removeLocalStorage('artist')
 
       CiderConcertsPlugin.updateLocalStorage('artist', this.artist)
-      this.getConcerts()
+      this.searchConcert()
     },
     postalCode () {
       CiderConcertsPlugin.updateLocalStorage('postalCode', this.postalCode)
+    },
+    searchInput () {
+      if (this.searchInput === '') {
+        this.artist = null
+        return CiderConcertsPlugin.removeLocalStorage('artist')
+      } else {
+        this.searchArtistDebounce()
+      }
+    },
+    page () {
+      this.searchConcert(false)
     }
   }
 })
@@ -204,11 +225,11 @@ Vue.component('plugin.concerts.concert-entry', {
           <div class="title text-overflow-elipsis">
             {{ venue.name }} | {{ venue.city.name }}
           </div>
-          <div class="sub-title text-overflow-elipsis">
+          <div class="subtitle text-overflow-elipsis">
             {{ date }} - {{ concertData.name }}
           </div>
         </div>
-    </div>
+      </div>
     </div>
   `,
   props: {
@@ -267,6 +288,12 @@ Vue.component('plugin.concerts.active-concert', {
           </div>
         </div>
       </div>
+      <div class="row buy-tickets">
+        <div class="col">
+          <h2>Buy Tickets</h2>
+          <button class="btn btn-primary" @click="onBuyTicketsClick">Ticketmaster</button>
+        </div>
+      </div>
       <div class="well">
         <h2>Lineup</h2>
         <div
@@ -287,6 +314,16 @@ Vue.component('plugin.concerts.active-concert', {
             </div>
           </div>
         </div>
+
+        <div class="price-ranges" v-if="concertData?.priceRanges?.length">
+          <h2>Prices</h2>
+          <p 
+            v-for="(priceRange, index) in concertData.priceRanges" 
+            :key="index"
+          >
+            {{ capitalize(priceRange.type) }}: {{ formatPriceRange(priceRange) }}
+          </p>
+        </div>
       </div>
       <div v-if="concertData.seatmap" class="seatmap-container">
         <img 
@@ -300,6 +337,23 @@ Vue.component('plugin.concerts.active-concert', {
     concertData: {
       type: Object,
       required: true
+    }
+  },
+  methods: {
+    onBuyTicketsClick () {
+      window.open(this.concertData.url)
+    },
+    formatPriceRange (priceRange) {
+      let output = this.formatCurrency(priceRange.min, priceRange.currency)
+      if (priceRange.min !== priceRange.max) output += ` - ${this.formatCurrency(priceRange.max, priceRange.currency)}`
+
+      return output
+    },
+    formatCurrency (price, code) {
+      return price.toLocaleString('en-US', { style: 'currency', currency: code });
+    },
+    capitalize (input) {
+      return input.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
     }
   }
 })
