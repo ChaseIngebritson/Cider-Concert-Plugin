@@ -75,8 +75,10 @@ Vue.component('plugin.concerts', {
             :active="activeConcert && activeConcert.id === concert.id"
             @set-active-concert="setActiveConcert(concert)"
           />
-          <button v-if="showPrevPage" @click="onPageClick('prev')">Previous</button>
-          <button v-if="showNextPage" @click="onPageClick('next')">Next</button>
+          <div class="page-button-row" v-if="totalPages > 1">
+            <button class="page-button icon icon-chevron-left" :disabled="!showPrevPage" @click="onPageClick('prev')"></button>
+            <button class="page-button icon icon-chevron-right" :disabled="!showNextPage" @click="onPageClick('next')"></button>
+          </div>
         </div>
         <plugin.concerts.active-concert
           v-if="activeConcert"
@@ -109,7 +111,7 @@ Vue.component('plugin.concerts', {
     const nowPlayingArtist = await CiderConcertsPlugin.getNowPlayingArtist()
     if (nowPlayingArtist) this.artist = nowPlayingArtist
 
-    if (!this.artist && this.postalCode) {
+    if (!this.artist) {
       this.searchConcert()
     }
   },
@@ -184,9 +186,9 @@ Vue.component('plugin.concerts', {
   },
   watch: {
     artist () {
-      if (!this.artist) return CiderConcertsPlugin.removeLocalStorage('artist')
+      if (!this.artist) CiderConcertsPlugin.removeLocalStorage('artist')
+      else CiderConcertsPlugin.updateLocalStorage('artist', this.artist)
 
-      CiderConcertsPlugin.updateLocalStorage('artist', this.artist)
       this.searchConcert()
     },
     postalCode () {
@@ -245,7 +247,11 @@ Vue.component('plugin.concerts.concert-entry', {
   computed: {
     date () {
       const datesObj = this.concertData.dates.start
-      const date = new Date(`${datesObj.localDate}T${datesObj.localTime}Z`)
+
+      let dateStr = datesObj.localDate
+      if (datesObj.localTime) dateStr += `T${datesObj.localTime}Z`
+
+      const date = new Date(dateStr)
 
       return new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -268,15 +274,17 @@ Vue.component('plugin.concerts.active-concert', {
     <div class="concert-info">
       <div class="concert-header">
         <artwork-material 
-          :url="concertData.images[0].url"
+          v-if="largestImage"
+          :url="largestImage.url"
           size="190"
           images="1"
         />
         <div class="row">
           <div class="col-sm">
             <div class="artist-image">
-              <mediaitem-artwork 
-                :url="concertData.images[0].url"
+              <mediaitem-artwork
+                v-if="largestImage"
+                :url="largestImage.url"
                 size="190"
                 type="artists"
                 shadow="large"
@@ -295,6 +303,8 @@ Vue.component('plugin.concerts.active-concert', {
         </div>
       </div>
       <div class="well">
+        <p v-if="concertData.pleaseNote">{{ concertData.pleaseNote }}</p>
+
         <h2>Lineup</h2>
         <div
           v-for="artist in concertData._embedded.attractions"
@@ -354,6 +364,16 @@ Vue.component('plugin.concerts.active-concert', {
     },
     capitalize (input) {
       return input.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+    }
+  },
+  computed: {
+    largestImage () {
+      if (!this.concertData?.images) return null
+
+      return this.concertData.images.reduce((largest, image) => {
+        if (image.width > largest.width) return image
+        return largest
+      }, this.concertData.images[0])
     }
   }
 })
