@@ -1,0 +1,219 @@
+.concerts-page {
+  height: calc(100% - var(--navigationBarHeight));
+  padding: 0px;
+
+  .icon {
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &-rotate-ccw {
+      background-image: url("./assets/svg/rotate-ccw.svg");
+    }
+
+    &-map-pin {
+      background-image: url("./assets/svg/map-pin.svg");
+    }
+
+    &-external-link {
+      background-image: url("./assets/svg/external-link.svg");
+    }
+
+    &-chevron-left {
+      background-image: url("./assets/svg/chevron-left.svg");
+    }
+
+    &-chevron-right {
+      background-image: url("./assets/svg/chevron-right.svg");
+    }
+  }
+
+  .badge {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    margin-right: 0.5rem;
+  }
+}
+
+.concerts-control-container {
+  .search-input-container .icon {
+    content: '';
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    pointer-events: none;
+    opacity: 0.55;
+    background-position: 10px;
+  }
+}
+
+.concerts-body {
+  width: 100%;
+  height: calc(100% - 64px); // Plz forgive me
+  display: flex;
+}
+
+.concerts-list {
+  width: 400px;
+  height: 100%;
+  background: rgba(200, 200, 200, 0.1);
+  overflow-y: overlay;
+  border-right: 1px solid var(--color2);
+  flex: none;
+  overflow-x: hidden;
+  position: relative;
+
+  .page-button-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1em;
+  }
+
+  .page-button {
+    background-color: rgba(86, 86, 86, 0.52);
+    border-radius: 100%;
+    width: 32px;
+    height: 32px;
+    border: 0px;
+    appearance: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(86, 86, 86, 0.8);
+    }
+  }
+}
+
+.concert-info {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+
+  .buy-tickets {
+    margin-left: 2em;
+
+    .header {
+      margin-top: 0;
+    }
+  }
+
+  .concert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 400px;
+    position: relative;
+
+    .artworkMaterial {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      margin: 0;
+      padding: 0;
+      -webkit-mask-image: radial-gradient(at top left, black, transparent 70%), radial-gradient(at top right, black, transparent 70%), linear-gradient(180deg, #c8c8c8, transparent 98%);
+      opacity: 0.7;
+      animation: playlistArtworkFadeIn 1s var(--appleEase);
+    }
+
+    .artist-image {
+      width: 200px;
+      height: 200px;
+      margin: 32px;
+      position: relative;
+
+      // Modify the mediaitem-square component to match the standard picture
+      .cd-mediaitem-square {
+        width: 100% !important;
+        height: 100% !important;
+
+        // Hide the artist name when it's the mediaitem-square component
+        .info-rect {
+          display: none;
+        }
+      }
+    }
+
+    .concert-title {
+      flex-grow: 100;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: flex-start;
+
+      .subtitle {
+        margin-top: 0;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .well-header {
+    margin-top: 0;
+  }
+
+  .seatmap-container {
+    max-height: 400px;
+    display: flex;
+    justify-content: center;
+
+    .seatmap {
+      object-fit: contain;
+      width: 100%;
+    }
+  }
+}
+
+.concert-control-container {
+  position: absolute;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75em;
+
+  .control-button {
+    border: 1px solid transparent;
+    background-color: #333;
+    cursor: pointer;
+    margin: 0.5em;
+    padding: 0.5em;
+
+    border-radius: 5px;
+    color: inherit;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    
+    height: 30px;
+    width: 45px;
+    border: 0px;
+    box-shadow: unset;
+    opacity: 0.7;
+  
+    &.icon {
+      &-dollar-sign {
+        background-image: url("./assets/svg/dollar-sign.svg");
+      }
+    
+      &-github {
+        background-image: url("./assets/svg/github.svg");
+      }
+    }
+  }
+}
