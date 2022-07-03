@@ -151,6 +151,7 @@
     .concert-title {
       flex-grow: 100;
       z-index: 1;
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-content: flex-start;
@@ -174,6 +175,45 @@
     .seatmap {
       object-fit: contain;
       width: 100%;
+    }
+  }
+}
+
+.concert-control-container {
+  position: absolute;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75em;
+
+  .control-button {
+    border: 1px solid transparent;
+    background-color: #333;
+    cursor: pointer;
+    margin: 0.5em;
+    padding: 0.5em;
+
+    border-radius: 5px;
+    color: inherit;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    
+    height: 30px;
+    width: 45px;
+    border: 0px;
+    box-shadow: unset;
+    opacity: 0.7;
+  
+    &.icon {
+      &-dollar-sign {
+        background-image: url("./assets/svg/dollar-sign.svg");
+      }
+    
+      &-github {
+        background-image: url("./assets/svg/github.svg");
+      }
     }
   }
 }
