@@ -83,6 +83,7 @@ Vue.component('plugin.concerts', {
         <plugin.concerts.active-concert
           v-if="activeConcert"
           :concert-data="activeConcert" 
+          :artist-data="activeArtist"
         />
       </div>
     </div>
@@ -96,6 +97,7 @@ Vue.component('plugin.concerts', {
     loading: false,
     postalCode: null,
     activeConcert: null,
+    activeArtist: null,
     page: 0,
     totalPages: 0
   }),
@@ -149,8 +151,21 @@ Vue.component('plugin.concerts', {
     getLz (term) {
       return window.app.getLz(term)
     },
-    setActiveConcert (concert) {
+    async setActiveConcert (concert) {
       this.activeConcert = concert
+
+      const attractions = concert._embedded.attractions
+      const isFestival = concert.classifications.find(classification => classification?.subType?.name === 'Festival')
+
+      if (
+        !attractions?.length ||
+        isFestival // Festivals usually have their name as the first artist, so just skip searching for artists in this
+      ) return this.activeArtist = null
+      
+      const artists = await CiderConcertsPlugin.searchArtists(attractions[0].name)
+
+      if (!artists?.length) this.activeArtist = null
+      else this.activeArtist = artists[0]
     },
     onPageClick (direction) {
       if (direction === 'prev') this.page--
@@ -283,44 +298,55 @@ Vue.component('plugin.concerts.active-concert', {
           <div class="col-sm">
             <div class="artist-image">
               <mediaitem-artwork
-                v-if="largestImage"
+                v-if="largestImage && !artistData"
                 :url="largestImage.url"
                 size="190"
                 type="artists"
                 shadow="large"
               />
+
+              <mediaitem-square
+                v-else-if="artistData"
+                :item="artistData"
+              />
             </div>
           </div>
-          <div class="concert-title col flex-center">
-            <h1>{{ concertData.name }}</h1>
+          <div class="concert-title col flex-start">
+            <h1 class="title">{{ concertData.name }}</h1>
+            <h3 v-if="start" class="subtitle">
+              <span>{{ start }}</span>
+              <span v-if="end">- {{ end }}</span>
+            </h3>
           </div>
         </div>
       </div>
       <div class="row buy-tickets">
         <div class="col">
-          <h2>Buy Tickets</h2>
+          <h2 class="header">Buy Tickets</h2>
           <button class="btn btn-primary" @click="onBuyTicketsClick">Ticketmaster</button>
         </div>
       </div>
       <div class="well">
         <p v-if="concertData.pleaseNote">{{ concertData.pleaseNote }}</p>
 
-        <h2>Lineup</h2>
-        <div
-          v-for="artist in concertData._embedded.attractions"
-          :key="artist.id"
-          class="cd-mediaitem-list-item list-flat lineup-artist"
-        >
-          <div class="artwork">
-            <mediaitem-artwork
-              :url="artist.images[0].url"
-              size="50"
-              type="artists"
-            />
-          </div>
-          <div class="info-rect">
-            <div class="title text-overflow-elipsis">
-              {{ artist.name }}
+        <div class="lineup">
+          <h2>Lineup</h2>
+          <div
+            v-for="artist in concertData._embedded.attractions"
+            :key="artist.id"
+            class="cd-mediaitem-list-item list-flat lineup-artist"
+          >
+            <div class="artwork">
+              <mediaitem-artwork
+                :url="artist.images[0].url"
+                size="50"
+                type="artists"
+              />
+            </div>
+            <div class="info-rect">
+              <div class="title text-overflow-elipsis">
+                {{ artist.name }}
+              </div>
             </div>
           </div>
         </div>
@@ -347,6 +373,9 @@ Vue.component('plugin.concerts.active-concert', {
     concertData: {
       type: Object,
       required: true
+    },
+    artistData: {
+      type: Object
     }
   },
   methods: {
@@ -364,9 +393,62 @@ Vue.component('plugin.concerts.active-concert', {
     },
     capitalize (input) {
       return input.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+    },
+    buildIntlDateTime ({ localDate, localTime, timezone }) {
+      if (!localDate) return null
+
+      let options = {
+        month: 'long',
+        day: 'numeric',
+      }
+
+      let dateStr = localDate
+      if (localTime) {
+        dateStr += `T${localTime}Z`
+        options = { 
+          hour: 'numeric', 
+          minute: 'numeric',
+          ...options
+        }
+      }
+
+      if (timezone) {
+        options = {
+          timeZone: timezone,
+          timeZoneName: 'short',
+          ...options
+        }
+      }
+
+      const date = new Date(dateStr)
+      return new Intl.DateTimeFormat('en-US', options).format(date)
     }
   },
   computed: {
+    start () {
+      const datesObj = this.concertData.dates.start
+      const timezone = this.concertData.dates.timezone
+
+      if (!datesObj) return null
+
+      return this.buildIntlDateTime({ 
+        localDate: datesObj.localDate,
+        localTime: datesObj.localTime,
+        timezone
+      })
+    },
+    end () {
+      const datesObj = this.concertData.dates.end
+      const timezone = this.concertData.dates.timezone
+
+      if (!datesObj) return null
+      
+      return this.buildIntlDateTime({ 
+        localDate: datesObj.localDate,
+        localTime: datesObj.localTime,
+        timezone
+      })
+    },
     largestImage () {
       if (!this.concertData?.images) return null
 

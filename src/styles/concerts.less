@@ -104,6 +104,10 @@
 
   .buy-tickets {
     margin-left: 2em;
+
+    .header {
+      margin-top: 0;
+    }
   }
 
   .concert-header {
@@ -112,7 +116,6 @@
     justify-content: space-between;
     min-height: 400px;
     position: relative;
-    pointer-events: none;
 
     .artworkMaterial {
       position: absolute;
@@ -132,11 +135,30 @@
       height: 200px;
       margin: 32px;
       position: relative;
+
+      // Modify the mediaitem-square component to match the standard picture
+      .cd-mediaitem-square {
+        width: 100% !important;
+        height: 100% !important;
+
+        // Hide the artist name when it's the mediaitem-square component
+        .info-rect {
+          display: none;
+        }
+      }
     }
 
     .concert-title {
       flex-grow: 100;
       z-index: 1;
+      flex-direction: column;
+      justify-content: center;
+      align-content: flex-start;
+
+      .subtitle {
+        margin-top: 0;
+        opacity: 0.7;
+      }
     }
   }
 

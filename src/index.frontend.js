@@ -36,8 +36,7 @@ class CiderConcertsFrontend {
     const storefront = musickit.storefrontId
     const response = await musickit.api.v3.music(`/v1/catalog/${storefront}/search?term=${artistName}`, {
       types: 'artists',
-      "include[artists]": "artists",
-      "fields[artists]": "url,name,artwork,hero"
+      "include[artists]": "artists"
     })
 
     return response?.data?.results?.artists?.data
@@ -72,7 +71,7 @@ class CiderConcertsFrontend {
   }
 
   removeLocalStorage (key) {
-    localStorage.removeItem(key);
+    localStorage.removeItem(`plugin.${this.PLUGIN_NAME}.${key}`);
     this.debug(`Removed ${key} from localStorage`)
   }
 
