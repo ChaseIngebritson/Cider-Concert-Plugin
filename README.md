@@ -1,45 +1,26 @@
-# Cider Plugin Template
+# Cider Concerts
 
-This is a [Cider Music](https://github.com/ciderapp/Cider) plugin template designed to streamline the plugin creation process while using Typescript. The template attempts to adhere to the [Cider Music v2 plugin schema](https://github.com/ciderapp/plugin-schema-poc/tree/main/v2_plugin).
+This is a [Cider Music](https://github.com/ciderapp/Cider) plugin template designed to provide concerts on your favorite artists in your location.
 
-## Building
+![An example of the plugin working in Cider](https://i.imgur.com/SvmPieW.png)
 
-This template utilizes [rollup.js](https://rollupjs.org/guide/en/) to compile the Typescript and package all required files.
+## Installation
 
-### Installation
+Assuming [Cider](https://github.com/ciderapp/Cider) is installed already:
 
-```bash
-yarn
-```
+* Select the dropdown menu in the top-left
+* Settings > Advanced > Explore GitHub Plugins
+* Cider Concerts
+* Install
 
-### Development
+## Issues
 
-Running in development mode will allow hot reloading on the build.
+If you run into any questions, concerns, or issues with the plugin, feel free to open an issue in Github, contact me directly via email or any of my socials, or DM me via the Cider Discord.
 
-```bash
-yarn start
-```
+* Github: https://github.com/ChaseIngebritson/Cider-Concert-Plugin/issues
+* Contact Me: https://linktr.ee/chaseingebritson
+* Discord: https://discord.gg/44TSKfrGe4 -> Goslopo#0001
 
-### Production
+## Disclaimer
 
-```bash
-yarn build
-```
-
-### Deployment
-
-**IMPORTANT NOTE BEFORE USING THE DEPLOY FUNCTION:**
-
-The Cider plugin system requires the plugin deployment files to be contained the in the `main` branch. As such, the deploy function will create a commit on the `main` branch with the production files.
-
-I would highly recommend using a seperately named branch, such as `dev-main` or something similar, to do development on.
-
-```bash
-yarn deploy
-```
-
-## Resources
-
-* [Cider Music Plugin Schema](https://github.com/ciderapp/plugin-schema-poc)
-* [Apple Music API](https://developer.apple.com/documentation/applemusicapi)
-* [rollup.js](https://rollupjs.org/guide/en/)
+The Cider Concerts plugin is powered by Ticketmaster and may include affiliate links for ticket purchases. These affilaite links do not affect ticket prices in any way and act soley as a way to help in supporting the plugin creator.

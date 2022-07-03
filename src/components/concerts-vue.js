@@ -416,13 +416,13 @@ Vue.component('plugin.concerts.active-concert', {
           minute: 'numeric',
           ...options
         }
-      }
 
-      if (timezone) {
-        options = {
-          timeZone: timezone,
-          timeZoneName: 'short',
-          ...options
+        if (timezone) {
+          options = {
+            timeZone: timezone,
+            timeZoneName: 'short',
+            ...options
+          }
         }
       }
 
